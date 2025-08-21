@@ -10,7 +10,7 @@ import { RSVPForm } from "../components/RSVPForm";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Wedding RSVP - " + config.name },
+    { title: "22 NOV 2025 - " + config.name },
     { name: "description", content: "Join us for our special day!" },
   ];
 }
@@ -395,19 +395,28 @@ export default function Home() {
             {/* Add to Calendar Button */}
             <motion.button
               onClick={() => {
-                // Create calendar event data
-                const event = {
-                  title: `${config.name} Wedding`,
-                  start: config.weddingDate,
-                  end: new Date(new Date(config.weddingDate).getTime() + 4 * 60 * 60 * 1000), // 4 hours later
-                  description: `Join us for our special day at ${config.venue.name}`,
-                  location: config.venue.address,
-                };
-                
-                // Generate Google Calendar URL
-                const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${event.start.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}/${event.end.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}&details=${encodeURIComponent(event.description)}&location=${encodeURIComponent(event.location)}`;
-                
-                window.open(googleUrl, '_blank');
+                try {
+                  // Create calendar event data
+                  const startDate = new Date(config.weddingDate);
+                  const endDate = new Date(startDate.getTime() + 4 * 60 * 60 * 1000); // 4 hours later
+                  
+                  const event = {
+                    title: `${config.name} Wedding`,
+                    start: startDate,
+                    end: endDate,
+                    description: `Join us for our special day at ${config.venue.name}`,
+                    location: config.venue.address,
+                  };
+                  
+                  // Generate Google Calendar URL
+                  const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${startDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}/${endDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}&details=${encodeURIComponent(event.description)}&location=${encodeURIComponent(event.location)}`;
+                  
+                  window.open(googleUrl, '_blank');
+                } catch (error) {
+                  console.error('Error creating calendar event:', error);
+                  // Fallback: open Google Calendar without pre-filled data
+                  window.open('https://calendar.google.com/calendar/render?action=TEMPLATE', '_blank');
+                }
               }}
               className="inline-flex items-center justify-center bg-white border-2 border-[#8B7355] text-[#8B7355] hover:bg-[#8B7355] hover:text-white px-12 py-5 rounded-full font-light text-lg tracking-widest uppercase transition-all duration-300 shadow-lg hover:shadow-xl group"
               whileHover={{ scale: 1.05 }}
