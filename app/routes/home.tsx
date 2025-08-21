@@ -34,13 +34,16 @@ export default function Home() {
   // Image slideshow state
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const images = [
-    "/1.jpg",
     "/2.jpg",
     "/3.jpg",
     "/4.jpg",
     "/5.jpg",
     "/7.jpg",
-    // "/8.jpg",
+    "/8.jpg",
+    "/9.jpg",
+    "/10.jpg",
+    "/11.jpg",
+    "/12.jpg",
   ];
 
   // Preload images for smooth transitions
@@ -121,19 +124,7 @@ export default function Home() {
         background: "linear-gradient(135deg, #F5F1EB 0%, #F9F7F4 100%)",
       }}
     >
-      {/* Scroll Navigation */}
-      <div className={`scroll-nav ${activeSection === 2 ? "light" : ""}`}>
-        {sections.map((sectionId, index) => (
-          <button
-            key={sectionId}
-            className={`scroll-nav-dot ${
-              activeSection === index ? "active" : ""
-            }`}
-            onClick={() => scrollToSection(sectionId, index)}
-            aria-label={`Go to section ${index + 1}`}
-          />
-        ))}
-      </div>
+
 
       {/* Section 1: Hero - Bride & Groom Image Slideshow */}
       <section
@@ -159,6 +150,52 @@ export default function Home() {
             />
           ))}
         </div>
+
+        {/* Left Navigation Arrow */}
+        <button
+          onClick={() => setCurrentImageIndex((prevIndex) =>
+            prevIndex === 0 ? images.length - 1 : prevIndex - 1
+          )}
+          className="absolute left-4 top-1/2 transform -translate-y-1/2 z-20 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full p-3 transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white/50"
+          aria-label="Previous image"
+        >
+          <svg
+            className="w-6 h-6 text-white"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+        </button>
+
+        {/* Right Navigation Arrow */}
+        <button
+          onClick={() => setCurrentImageIndex((prevIndex) =>
+            prevIndex === images.length - 1 ? 0 : prevIndex + 1
+          )}
+          className="absolute right-4 top-1/2 transform -translate-y-1/2 z-20 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full p-3 transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white/50"
+          aria-label="Next image"
+        >
+          <svg
+            className="w-6 h-6 text-white"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 5l7 7-7 7"
+            />
+          </svg>
+        </button>
 
         {/* Slideshow indicators */}
         <div className="absolute bottom-20 sm:bottom-24 md:bottom-28 left-1/2 transform -translate-x-1/2 z-20">
@@ -352,9 +389,47 @@ export default function Home() {
           </motion.div>
 
           <motion.div
-            className="text-center flex flex-col items-center"
+            className="text-center flex flex-col sm:flex-row items-center gap-6"
             variants={fadeInUp}
           >
+            {/* Add to Calendar Button */}
+            <motion.button
+              onClick={() => {
+                // Create calendar event data
+                const event = {
+                  title: `${config.name} Wedding`,
+                  start: config.weddingDate,
+                  end: new Date(new Date(config.weddingDate).getTime() + 4 * 60 * 60 * 1000), // 4 hours later
+                  description: `Join us for our special day at ${config.venue.name}`,
+                  location: config.venue.address,
+                };
+                
+                // Generate Google Calendar URL
+                const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${event.start.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}/${event.end.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}&details=${encodeURIComponent(event.description)}&location=${encodeURIComponent(event.location)}`;
+                
+                window.open(googleUrl, '_blank');
+              }}
+              className="inline-flex items-center justify-center bg-white border-2 border-[#8B7355] text-[#8B7355] hover:bg-[#8B7355] hover:text-white px-12 py-5 rounded-full font-light text-lg tracking-widest uppercase transition-all duration-300 shadow-lg hover:shadow-xl group"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <svg
+                className="w-5 h-5 mr-3"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+              <span>Add to Calendar</span>
+            </motion.button>
+
+            {/* RSVP Now Button */}
             <motion.a
               href="#rsvp-form"
               className="inline-flex items-center justify-center text-white px-16 py-5 rounded-full font-light text-lg tracking-widest uppercase transition-all duration-300 shadow-lg hover:shadow-xl group"
