@@ -480,10 +480,35 @@ export default function Home() {
                   const isAndroid = /android/i.test(userAgent);
                   const isMac = /macintosh|mac os x/i.test(userAgent);
                   
-                  // Universal fallback: Always use iCal download for maximum compatibility
-                  // This works in all browsers, including internal browsers (LINE, Facebook, etc.)
-                  // and provides the best cross-platform experience
-                  downloadICalFile(startDate, endDate);
+                  // Detect internal browsers that block downloads
+                  const isInternalBrowser = /line|facebook|instagram|twitter|whatsapp|telegram|wechat|kakao/i.test(userAgent);
+                  
+                  // If internal browser detected, prompt user to open in external browser
+                  if (isInternalBrowser) {
+                    const shouldOpenExternal = confirm(
+                      'For the best experience, please open this website in your default browser. Would you like to open it now?'
+                    );
+                    if (shouldOpenExternal) {
+                      // Try to open in external browser
+                      window.open(window.location.href, '_system');
+                      return;
+                    }
+                  }
+                  
+                  // Platform detection logic
+                  if (isIOS || isMac) {
+                    // iOS/Mac users - download iCal file (best experience)
+                    downloadICalFile(startDate, endDate);
+                  } else if (isAndroid) {
+                    // Android users - try Google Calendar first, fallback to iCal
+                    openGoogleCalendar(startDate, endDate);
+                  } else if (isMobile) {
+                    // Other mobile devices - download iCal file (universal)
+                    downloadICalFile(startDate, endDate);
+                  } else {
+                    // Desktop users - try Google Calendar first, fallback to iCal
+                    openGoogleCalendar(startDate, endDate);
+                  }
                 } catch (error) {
                   console.error('Error detecting platform:', error);
                   // Fallback: download iCal file (works everywhere)
