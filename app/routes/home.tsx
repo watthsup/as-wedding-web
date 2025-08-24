@@ -85,13 +85,13 @@ export default function Home() {
   // Image slideshow state
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const images = [
-    "/11.jpg",
+    "/2.jpg",
     "/9.jpg",
     "/5.jpg",
-    "/2.jpg",
-    "/3.jpg",
     "/10.jpg",
+    "/3.jpg",
     "/14.jpg",
+    "/11.jpg",
     "/12.jpg",
   ];
 
