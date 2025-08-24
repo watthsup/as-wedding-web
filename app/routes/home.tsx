@@ -10,8 +10,8 @@ import { RSVPForm } from "../components/RSVPForm";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "22 NOV 2025 - " + config.name },
-    { name: "description", content: "Join us for our special day!" },
+    { title: config.name + "'s Wedding | 22 Nov 2025"},
+    { name: "description", content: "Join us to celebrate a day of love, joy, and memories." },
   ];
 }
 
