@@ -85,9 +85,9 @@ export default function Home() {
         location: config.venue.address,
       };
       
-      // Google Calendar as all-day event with time in title
+      // Google Calendar as all-day event - use the exact format Google expects
       const startDateOnly = startDate.toISOString().split('T')[0]; // YYYY-MM-DD format
-      const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${startDateOnly}/${startDateOnly}&details=${encodeURIComponent(event.description)}&location=${encodeURIComponent(event.location)}`;
+      const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${startDateOnly}&details=${encodeURIComponent(event.description)}&location=${encodeURIComponent(event.location)}`;
       
       window.open(googleUrl, '_blank');
     } catch (error) {
