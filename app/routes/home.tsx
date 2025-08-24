@@ -480,20 +480,10 @@ export default function Home() {
                   const isAndroid = /android/i.test(userAgent);
                   const isMac = /macintosh|mac os x/i.test(userAgent);
                   
-                  // Platform detection logic
-                  if (isIOS || isMac) {
-                    // iOS/Mac users - download iCal file (best experience)
-                    downloadICalFile(startDate, endDate);
-                  } else if (isAndroid) {
-                    // Android users - try Google Calendar first, fallback to iCal
-                    openGoogleCalendar(startDate, endDate);
-                  } else if (isMobile) {
-                    // Other mobile devices - download iCal file (universal)
-                    downloadICalFile(startDate, endDate);
-                  } else {
-                    // Desktop users - try Google Calendar first, fallback to iCal
-                    openGoogleCalendar(startDate, endDate);
-                  }
+                  // Universal fallback: Always use iCal download for maximum compatibility
+                  // This works in all browsers, including internal browsers (LINE, Facebook, etc.)
+                  // and provides the best cross-platform experience
+                  downloadICalFile(startDate, endDate);
                 } catch (error) {
                   console.error('Error detecting platform:', error);
                   // Fallback: download iCal file (works everywhere)
