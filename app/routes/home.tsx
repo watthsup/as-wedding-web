@@ -32,8 +32,8 @@ export default function Home() {
         `DTSTART:${startDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}`,
         `DTEND:${endDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}`,
         `SUMMARY:${config.name} Wedding`,
-        `DESCRIPTION:Join us for our special day at ${config.venue.name}`,
-        `LOCATION:${config.venue.address}`,
+        `DESCRIPTION:Join us for our special day at ${config.venue.name}\\n\\nWedding Website: https://as-wedding-web.vercel.app/`,
+        `LOCATION:${config.venue.name}`,
         // Add multiple reminder notifications
         'BEGIN:VALARM',
         'TRIGGER:-P1D',
@@ -81,12 +81,12 @@ export default function Home() {
         title: `[${timeString}] ${config.name} Wedding`,
         start: startDate,
         end: endDate,
-        description: `Join us for our special day at ${config.venue.name}`,
-        location: config.venue.address,
+        description: `Join us for our special day at ${config.venue.name}\n\nWedding Website: https://as-wedding-web.vercel.app/`,
+        location: config.venue.name,
       };
       
-      // Google Calendar with proper date and time from config
-      const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=20251122/20251122&details=${encodeURIComponent(event.description)}&location=${encodeURIComponent(event.location)}`;
+      // Google Calendar with proper date and time from config, plus 1 day before reminder at 6 PM
+      const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=20251122/20251122&details=${encodeURIComponent(event.description)}&location=${encodeURIComponent(event.location)}&reminders=popup,1440`;
       
       window.open(googleUrl, '_blank');
     } catch (error) {
