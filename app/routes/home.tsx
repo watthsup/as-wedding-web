@@ -70,16 +70,24 @@ export default function Home() {
 
   const openGoogleCalendar = (startDate: Date, endDate: Date) => {
     try {
+      // Format time for title (e.g., "6:00 PM")
+      const timeString = startDate.toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit',
+        hour12: true 
+      });
+      
       const event = {
-        title: `${config.name} Wedding`,
+        title: `[${timeString}] ${config.name} Wedding`,
         start: startDate,
         end: endDate,
         description: `Join us for our special day at ${config.venue.name}`,
         location: config.venue.address,
       };
       
-      // Google Calendar without reminder parameters (uses default behavior)
-      const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${startDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}/${endDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}&details=${encodeURIComponent(event.description)}&location=${encodeURIComponent(event.location)}`;
+      // Google Calendar as all-day event with time in title
+      const startDateOnly = startDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+      const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${startDateOnly}/${startDateOnly}&details=${encodeURIComponent(event.description)}&location=${encodeURIComponent(event.location)}`;
       
       window.open(googleUrl, '_blank');
     } catch (error) {
