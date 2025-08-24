@@ -78,8 +78,8 @@ export default function Home() {
         location: config.venue.address,
       };
       
-      // Google Calendar with reminders: 1 day before, 1 hour before, and 15 minutes before
-      const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${startDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}/${endDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}&details=${encodeURIComponent(event.description)}&location=${encodeURIComponent(event.location)}&reminders=popup,1440&reminders=popup,60&reminders=popup,15`;
+      // Google Calendar with day-of-event reminder only (more reliable)
+      const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${startDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}/${endDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}&details=${encodeURIComponent(event.description)}&location=${encodeURIComponent(event.location)}&reminders=popup,0`;
       
       window.open(googleUrl, '_blank');
     } catch (error) {
