@@ -21,6 +21,57 @@ export default function Home() {
     return fromZonedTime(config.weddingDate, "Asia/Bangkok");
   }, []);
 
+  // Helper functions for calendar functionality
+  const downloadICalFile = (startDate: Date, endDate: Date) => {
+    try {
+      const icalData = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//Wedding Website//Calendar Event//EN',
+        'BEGIN:VEVENT',
+        `DTSTART:${startDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}`,
+        `DTEND:${endDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}`,
+        `SUMMARY:${config.name} Wedding`,
+        `DESCRIPTION:Join us for our special day at ${config.venue.name}`,
+        `LOCATION:${config.venue.address}`,
+        'END:VEVENT',
+        'END:VCALENDAR'
+      ].join('\r\n');
+      
+      const blob = new Blob([icalData], { type: 'text/calendar;charset=utf-8' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `${config.name.replace(/\s+/g, '_')}_Wedding.ics`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+    } catch (error) {
+      console.error('Error creating iCal file:', error);
+      alert('Unable to create calendar file. Please try again.');
+    }
+  };
+
+  const openGoogleCalendar = (startDate: Date, endDate: Date) => {
+    try {
+      const event = {
+        title: `${config.name} Wedding`,
+        start: startDate,
+        end: endDate,
+        description: `Join us for our special day at ${config.venue.name}`,
+        location: config.venue.address,
+      };
+      
+      const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${startDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}/${endDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}&details=${encodeURIComponent(event.description)}&location=${encodeURIComponent(event.location)}`;
+      
+      window.open(googleUrl, '_blank');
+    } catch (error) {
+      console.error('Error opening Google Calendar:', error);
+      // Fallback to iCal download
+      downloadICalFile(startDate, endDate);
+    }
+  };
+
   const timeLeft = useCountdown(weddingDate);
 
   const formattedWeddingDate = useMemo(() => {
@@ -390,154 +441,59 @@ export default function Home() {
             className="text-center flex flex-col sm:flex-row items-center gap-6"
             variants={fadeInUp}
           >
-            {/* Add to Calendar Button with Dropdown */}
-            <div className="relative group">
-              <motion.button
-                onClick={() => {
-                  try {
-                    // Create calendar event data
-                    const startDate = new Date(config.weddingDate);
-                    const endDate = new Date(startDate.getTime() + 4 * 60 * 60 * 1000); // 4 hours later
-                    
-                    const event = {
-                      title: `${config.name} Wedding`,
-                      start: startDate,
-                      end: endDate,
-                      description: `Join us for our special day at ${config.venue.name}`,
-                      location: config.venue.address,
-                    };
-                    
-                    // Generate Google Calendar URL
-                    const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${startDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}/${endDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}&details=${encodeURIComponent(event.description)}&location=${encodeURIComponent(event.location)}`;
-                    
-                    window.open(googleUrl, '_blank');
-                  } catch (error) {
-                    console.error('Error creating calendar event:', error);
-                    // Fallback: open Google Calendar without pre-filled data
-                    window.open('https://calendar.google.com/calendar/render?action=TEMPLATE', '_blank');
+            {/* Smart Add to Calendar Button */}
+            <motion.button
+              onClick={() => {
+                try {
+                  const startDate = new Date(config.weddingDate);
+                  const endDate = new Date(startDate.getTime() + 4 * 60 * 60 * 1000);
+                  
+                  // Detect platform and device type
+                  const userAgent = navigator.userAgent.toLowerCase();
+                  const isMobile = /mobile|android|iphone|ipad|ipod|blackberry|windows phone/i.test(userAgent);
+                  const isIOS = /iphone|ipad|ipod/i.test(userAgent);
+                  const isAndroid = /android/i.test(userAgent);
+                  const isMac = /macintosh|mac os x/i.test(userAgent);
+                  
+                  // Platform detection logic
+                  if (isIOS || isMac) {
+                    // iOS/Mac users - download iCal file (best experience)
+                    downloadICalFile(startDate, endDate);
+                  } else if (isAndroid) {
+                    // Android users - try Google Calendar first, fallback to iCal
+                    openGoogleCalendar(startDate, endDate);
+                  } else if (isMobile) {
+                    // Other mobile devices - download iCal file (universal)
+                    downloadICalFile(startDate, endDate);
+                  } else {
+                    // Desktop users - try Google Calendar first, fallback to iCal
+                    openGoogleCalendar(startDate, endDate);
                   }
-                }}
-                className="inline-flex items-center justify-center bg-white border-2 border-[#8B7355] text-[#8B7355] hover:bg-[#8B7355] hover:text-white px-12 py-5 rounded-full font-light text-lg tracking-widest uppercase transition-all duration-300 shadow-lg hover:shadow-xl group"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                } catch (error) {
+                  console.error('Error detecting platform:', error);
+                  // Fallback: download iCal file (works everywhere)
+                  downloadICalFile(new Date(config.weddingDate), new Date(new Date(config.weddingDate).getTime() + 4 * 60 * 60 * 1000));
+                }
+              }}
+              className="inline-flex items-center justify-center bg-white border-2 border-[#8B7355] text-[#8B7355] hover:bg-[#8B7355] hover:text-white px-12 py-5 rounded-full font-light text-lg tracking-widest uppercase transition-all duration-300 shadow-lg hover:shadow-xl group"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <svg
+                className="w-5 h-5 mr-3"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
               >
-                <svg
-                  className="w-5 h-5 mr-3"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
-                <span>Add to Calendar</span>
-                <svg
-                  className="w-4 h-4 ml-2 transition-transform group-hover:rotate-180"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </motion.button>
-              
-              {/* Dropdown Menu */}
-              <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-50">
-                <div className="p-4">
-                  <h3 className="text-sm font-medium text-gray-900 mb-3 text-center">Choose Calendar</h3>
-                  
-                  {/* Google Calendar */}
-                  <button
-                    onClick={() => {
-                      try {
-                        const startDate = new Date(config.weddingDate);
-                        const endDate = new Date(startDate.getTime() + 4 * 60 * 60 * 1000);
-                        const event = {
-                          title: `${config.name} Wedding`,
-                          start: startDate,
-                          end: endDate,
-                          description: `Join us for our special day at ${config.venue.name}`,
-                          location: config.venue.address,
-                        };
-                        const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${startDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}/${endDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}&details=${encodeURIComponent(event.description)}&location=${encodeURIComponent(event.location)}`;
-                        window.open(googleUrl, '_blank');
-                      } catch (error) {
-                        console.error('Error creating Google Calendar event:', error);
-                        window.open('https://calendar.google.com/calendar/render?action=TEMPLATE', '_blank');
-                      }
-                    }}
-                    className="w-full flex items-center p-3 rounded-xl hover:bg-gray-50 transition-colors mb-2"
-                  >
-                    <svg className="w-5 h-5 mr-3 text-red-500" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    </svg>
-                    <div className="text-left">
-                      <div className="font-medium text-gray-900">Google Calendar</div>
-                      <div className="text-sm text-gray-500">Web & Android</div>
-                    </div>
-                  </button>
-                  
-                  {/* Apple Calendar */}
-                  <button
-                    onClick={() => {
-                      try {
-                        const startDate = new Date(config.weddingDate);
-                        const endDate = new Date(startDate.getTime() + 4 * 60 * 60 * 1000);
-                        
-                        // Create iCal format data
-                        const icalData = [
-                          'BEGIN:VCALENDAR',
-                          'VERSION:2.0',
-                          'PRODID:-//Wedding Website//Calendar Event//EN',
-                          'BEGIN:VEVENT',
-                          `DTSTART:${startDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}`,
-                          `DTEND:${endDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}`,
-                          `SUMMARY:${config.name} Wedding`,
-                          `DESCRIPTION:Join us for our special day at ${config.venue.name}`,
-                          `LOCATION:${config.venue.address}`,
-                          'END:VEVENT',
-                          'END:VCALENDAR'
-                        ].join('\r\n');
-                        
-                        // Create and download .11 file
-                        const blob = new Blob([icalData], { type: 'text/calendar;charset=utf-8' });
-                        const link = document.createElement('a');
-                        link.href = URL.createObjectURL(blob);
-                        link.download = `${config.name.replace(/\s+/g, '_')}_Wedding.ics`;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        URL.revokeObjectURL(link.href);
-                      } catch (error) {
-                        console.error('Error creating Apple Calendar event:', error);
-                        alert('Unable to create calendar file. Please try again.');
-                      }
-                    }}
-                    className="w-full flex items-center p-3 rounded-xl hover:bg-gray-50 transition-colors"
-                  >
-                    <svg className="w-5 h-5 mr-3 text-gray-900" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
-                    </svg>
-                    <div className="text-left">
-                      <div className="font-medium text-gray-900">Apple Calendar</div>
-                      <div className="text-sm text-gray-500">iPhone, iPad & Mac</div>
-                    </div>
-                  </button>
-                </div>
-              </div>
-            </div>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+              <span>Add to Calendar</span>
+            </motion.button>
 
             {/* RSVP Now Button */}
             <motion.a
