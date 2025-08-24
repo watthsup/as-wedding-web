@@ -34,6 +34,22 @@ export default function Home() {
         `SUMMARY:${config.name} Wedding`,
         `DESCRIPTION:Join us for our special day at ${config.venue.name}`,
         `LOCATION:${config.venue.address}`,
+        // Add multiple reminder notifications
+        'BEGIN:VALARM',
+        'TRIGGER:-P1D',
+        'ACTION:DISPLAY',
+        'DESCRIPTION:Reminder: Wedding tomorrow!',
+        'END:VALARM',
+        'BEGIN:VALARM',
+        'TRIGGER:-PT1H',
+        'ACTION:DISPLAY',
+        'DESCRIPTION:Reminder: Wedding in 1 hour!',
+        'END:VALARM',
+        'BEGIN:VALARM',
+        'TRIGGER:-PT15M',
+        'ACTION:DISPLAY',
+        'DESCRIPTION:Reminder: Wedding in 15 minutes!',
+        'END:VALARM',
         'END:VEVENT',
         'END:VCALENDAR'
       ].join('\r\n');
@@ -62,7 +78,8 @@ export default function Home() {
         location: config.venue.address,
       };
       
-      const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${startDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}/${endDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}&details=${encodeURIComponent(event.description)}&location=${encodeURIComponent(event.location)}`;
+      // Google Calendar with reminders: 1 day before, 1 hour before, and 15 minutes before
+      const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${startDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}/${endDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}&details=${encodeURIComponent(event.description)}&location=${encodeURIComponent(event.location)}&reminders=popup,1440&reminders=popup,60&reminders=popup,15`;
       
       window.open(googleUrl, '_blank');
     } catch (error) {
@@ -109,7 +126,7 @@ export default function Home() {
       setCurrentImageIndex((prevIndex) =>
         prevIndex === images.length - 1 ? 0 : prevIndex + 1
       );
-    }, 4000); // Change image every 5 seconds
+    }, 3000); // Change image every 5 seconds
 
     return () => clearInterval(interval);
   }, [images.length]);
