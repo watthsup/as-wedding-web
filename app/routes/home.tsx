@@ -87,7 +87,7 @@ export default function Home() {
       };
       
       // Google Calendar with proper date and time from config, plus 1 day before reminder at 6 PM
-      const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${encodeURIComponent('20251122/20251122')}&details=${encodeURIComponent(event.description)}&location=${encodeURIComponent(event.locationLink)}&reminders=popup,1440`;
+      const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${encodeURIComponent('20251122/20251123')}&details=${encodeURIComponent(event.description)}&location=${encodeURIComponent(event.locationLink)}&reminders=popup,1440`;
       
       window.open(googleUrl, '_blank');
     } catch (error) {
